@@ -1,101 +1,87 @@
--- Tabella Login Utenti
-CREATE TABLE Users (
-    User_ID SERIAL PRIMARY KEY,
-    Username VARCHAR(255) NOT NULL UNIQUE,
-    Password_Hash VARCHAR(255) NOT NULL,
-    Email_Address VARCHAR(255) NOT NULL UNIQUE
+--Tabella Login Utenti
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    email_address VARCHAR(255) NOT NULL UNIQUE
 );
 
--- Tabella Pazienti
-CREATE TABLE Patients (
-    Patient_ID SERIAL PRIMARY KEY,
-    First_Name VARCHAR(255) NOT NULL,
-    Last_Name VARCHAR(255) NOT NULL,
-    Date_of_Birth DATE NOT NULL,
-    Tax_Code VARCHAR(16) UNIQUE,
-    Contact_Info VARCHAR(255)
+--Tabella Pazienti
+CREATE TABLE patients (
+    patient_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
+    date_of_birth DATE NOT NULL,
+    FC VARCHAR(255) NOT NULL,
+    contact_info VARCHAR(255)
 );
 
--- Tabella Operatori
-CREATE TABLE Operators (
-    Operator_ID SERIAL PRIMARY KEY,
-    First_Name VARCHAR(255) NOT NULL,
-    Last_Name VARCHAR(255) NOT NULL,
-    Role VARCHAR(255) NOT NULL,
-    Contact_Info VARCHAR(255)
+--Tabella Operatori
+CREATE TABLE operators (
+    operator_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
+    role VARCHAR(255) NOT NULL,
+    contact_info VARCHAR(255)
 );
 
--- Tabella Laboratori
-CREATE TABLE Laboratories (
-    Laboratory_ID SERIAL PRIMARY KEY,
-    Name VARCHAR(255) NOT NULL,
-    Address VARCHAR(255),
-    Contact_Info VARCHAR(255)
+--Tabella Laboratori
+CREATE TABLE laboratories (
+    laboratory_id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    address VARCHAR(255),
+    contact_info VARCHAR(255)
 );
 
--- Tabella Tipi di Esame
-CREATE TABLE Exam_Types (
-    Exam_Type_ID SERIAL PRIMARY KEY,
-    Name VARCHAR(255) NOT NULL UNIQUE,
-    Description TEXT
+--Tabella Tipi di Esame
+CREATE TABLE exam_types (
+    exam_type_id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    description TEXT
 );
 
--- Tabella Esami Prenotabili e Regole di Prenotazione
-CREATE TABLE Exams (
-    Exam_ID SERIAL PRIMARY KEY,
-    Name VARCHAR(255) NOT NULL,
-    Description TEXT,
-    Exam_Type_ID INT NOT NULL REFERENCES Exam_Types(Exam_Type_ID) ON DELETE CASCADE,
-    Laboratory_ID INT NOT NULL REFERENCES Laboratories(Laboratory_ID) ON DELETE CASCADE,
-    Operator_ID INT REFERENCES Operators(Operator_ID) ON DELETE SET NULL,
-    Is_Available BOOLEAN DEFAULT TRUE,
-    Avaiable_From DATE,
-    Avaiable_To DATE,
-    Opening_Time TIME NOT NULL,
-    Closing_Time TIME NOT NULL,
-    Slot_Duration INT NOT NULL,
-    Buffer_Time INT NOT NULL,
-    Weekday VARCHAR(50) NOT NULL CHECK(Weekday IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')),
+--Tabella Esami Prenotabili e Regole di Prenotazione
+CREATE TABLE exams (
+    exam_id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    exam_type_id INT NOT NULL REFERENCES exam_types(exam_type_id) ON DELETE CASCADE,
+    laboratory_id INT NOT NULL REFERENCES laboratories(laboratory_id) ON DELETE CASCADE,
+    operator_id INT REFERENCES operators(operator_id) ON DELETE CASCADE,
+    is_available BOOLEAN DEFAULT TRUE,
+    available_from DATE,
+    available_to DATE,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    slot_duration INT NOT NULL CHECK(slot_duration IN (10,20,30,40,50,60,70,80,90,100,110)),
+    pause_minutes INT NOT NULL CHECK(pause_minutes IN (0,5,10,15,20,25,30)),
+    weekday INT NOT NULL CHECK(weekday IN (0,1,2,3,4,5,6))
 );
 
--- Tabella Chiusure Laboratori
-CREATE TABLE Laboratory_Closures (
-    Closure_ID SERIAL PRIMARY KEY,
-    Laboratory_ID INT NOT NULL REFERENCES Laboratories(Laboratory_ID) ON DELETE CASCADE,
-    Start_Date TIMESTAMP NOT NULL,
-    End_Date TIMESTAMP NOT NULL
+--Tabella Chiusure Laboratori
+CREATE TABLE laboratory_closures (
+    closure_id SERIAL PRIMARY KEY,
+    laboratory_id INT NOT NULL REFERENCES laboratories(laboratory_id) ON DELETE CASCADE,
+    start_date TIMESTAMP NOT NULL,
+    end_date TIMESTAMP NOT NULL CHECK(end_date >= start_date)
 );
 
--- Tabella Assenze Operatori
-CREATE TABLE Operator_Absences (
-    Absence_ID SERIAL PRIMARY KEY,
-    Operator_ID INT NOT NULL REFERENCES Operators(Operator_ID) ON DELETE CASCADE,
-    Start_Date TIMESTAMP NOT NULL,
-    End_Date TIMESTAMP NOT NULL
+--Tabella Assenze Operatori
+CREATE TABLE operator_absences (
+    absence_id SERIAL PRIMARY KEY,
+    operator_id INT NOT NULL REFERENCES operators(operator_id) ON DELETE CASCADE,
+    start_date TIMESTAMP NOT NULL,
+    end_date TIMESTAMP NOT NULL CHECK(end_date >= start_date)
 );
 
--- Tabella Chiusure Laboratori
-CREATE TABLE Laboratory_Closures (
-    Closure_ID SERIAL PRIMARY KEY,
-    Laboratory_ID INT NOT NULL REFERENCES Laboratories(Laboratory_ID) ON DELETE CASCADE,
-    Start_Date TIMESTAMP NOT NULL,
-    End_Date TIMESTAMP NOT NULL
-);
-
--- Tabella Assenze Operatori
-CREATE TABLE Operator_Absences (
-    Absence_ID SERIAL PRIMARY KEY,
-    Operator_ID INT NOT NULL REFERENCES Operators(Operator_ID) ON DELETE CASCADE,
-    Start_Date TIMESTAMP NOT NULL,
-    End_Date TIMESTAMP NOT NULL
-);
-
--- Tabella Prenotazioni
-CREATE TABLE Bookings (
-    Appointment_ID SERIAL PRIMARY KEY,
-    Patient_ID INT NOT NULL REFERENCES Patients(Patient_ID) ON DELETE CASCADE,
-    Exam_ID INT NOT NULL REFERENCES Exams(Exam_ID) ON DELETE CASCADE,
-    Appointment_Date TIMESTAMP NOT NULL,
-    Appointment_Time TIME NOT NULL,
-    Status VARCHAR(50) DEFAULT 'Confirmed' 
+--Tabella Prenotazioni
+CREATE TABLE bookings (
+    appointment_id SERIAL PRIMARY KEY,
+    patient_id INT NOT NULL REFERENCES patients(patient_id) ON DELETE CASCADE,
+    exam_id INT NOT NULL REFERENCES exams(exam_id) ON DELETE CASCADE,
+    appointment_date TIMESTAMP NOT NULL,
+    appointment_time TIME NOT NULL,
+    status VARCHAR(50) DEFAULT 'confirmed'
 );
