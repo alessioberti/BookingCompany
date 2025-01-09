@@ -25,7 +25,10 @@ def create_app():
 
     # Caricamento delle rotte dal file routes.py
     from .auth_routes import auth_bp
-    app.register_blueprint(auth_bp)
+    from .slots_route import slots_bp
 
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(slots_bp)
+    
     return app
 
