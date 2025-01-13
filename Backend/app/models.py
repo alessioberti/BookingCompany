@@ -89,6 +89,16 @@ class OperatorsAvailability(db.Model):
     operator = db.relationship('Operator', back_populates='operators_availability')
 
 
+# Model per la tabella laboratory_closures
+class LaboratoryClosure(db.Model):
+    __tablename__ = 'laboratory_closures'
+
+    # Colonne
+    closure_id = db.Column('closure_id', db.Integer, primary_key=True)
+    laboratory_id = db.Column('laboratory_id', db.Integer, db.ForeignKey('laboratories.laboratory_id'), nullable=False)
+    start_date = db.Column('start_date', db.DateTime, nullable=False)
+    end_date = db.Column('end_date', db.DateTime, nullable=False)
+
 # Model per la tabella exam_types
 class ExamType(db.Model):
     __tablename__ = 'exam_types'
@@ -102,15 +112,7 @@ class ExamType(db.Model):
     operators_availability = db.relationship('OperatorsAvailability', backref='exam_type')
 
 
-# Model per la tabella laboratory_closures
-class LaboratoryClosure(db.Model):
-    __tablename__ = 'laboratory_closures'
 
-    # Colonne
-    closure_id = db.Column('closure_id', db.Integer, primary_key=True)
-    laboratory_id = db.Column('laboratory_id', db.Integer, db.ForeignKey('laboratories.laboratory_id'), nullable=False)
-    start_date = db.Column('start_date', db.DateTime, nullable=False)
-    end_date = db.Column('end_date', db.DateTime, nullable=False)
 
 
 # Model per la tabella operator_absences
